@@ -20,7 +20,7 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 # 👉 Add this route to fix the issue
-@app.route('/index')
+@app.route('/')
 def index():
     return render_template('index.html')
 # @app.route('/')
