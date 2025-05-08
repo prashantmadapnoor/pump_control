@@ -16,6 +16,7 @@ db_config = {
     'database': 'EV_STATION',
     'port' : 3306,
 }
+
 # Helper: Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
