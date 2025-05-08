@@ -10,11 +10,11 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': 'mgtdbsql',
+    'host': 'MGTserver007',
     'user': 'evadminserver',
     'password': 'MGTev007',
     'database': 'EV_STATION',
-    'port' :'3306'
+    'port' : 3306,
 }
 # Helper: Hash password
 def hash_password(password):
