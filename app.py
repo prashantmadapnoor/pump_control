@@ -4,17 +4,18 @@ import hashlib
 from werkzeug.security import generate_password_hash,check_password_hash
 import re
 
+
 app = Flask(__name__)
 app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',
-    'database': 'remote_control'
+    'host': 'mgtdbsql',
+    'user': 'evadminserver',
+    'password': 'MGTev007',
+    'database': 'EV_STATION',
+    'port' :'3306'
 }
-
 # Helper: Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
