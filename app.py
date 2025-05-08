@@ -10,7 +10,7 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': 'MGTserver007',
+    'host': 'ubuntumgt',
     'user': 'evadminserver',
     'password': 'MGTev007',
     'database': 'EV_STATION',
