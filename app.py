@@ -176,6 +176,8 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    conn = None
+    cursor = None
     if request.method == 'POST':
         email = request.form['email'].strip()
         password = request.form['password']
@@ -189,7 +191,7 @@ def login():
 
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['id']
-                session['user_name'] = user['name']  # ✅ FIXED here
+                session['user_name'] = user['name']
 
                 # Admin login check
                 if email == 'admin@example.com' and check_password_hash(user['password'], 'Admin@1234'):
@@ -205,10 +207,13 @@ def login():
             flash(f"Database error: {err}")
             return redirect(url_for('login'))
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
     return render_template('login.html')
+
 @app.route('/profile')
 def profile():
     if 'user_id' not in session:
