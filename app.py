@@ -10,10 +10,11 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': '${{RAILWAY_PRIVATE_DOMAIN}}',
-    'user': 'root',
-    'password': '${{MYSQL_ROOT_PASSWORD}}',
-    'database': '${{MYSQL_DATABASE}}',
+    'host': '192.168.0.174',
+    'user': 'evadminserve',
+    'password': 'MGTev007',
+    'database': 'EV_STATION',
+    'port':3306,
 }
 
 # Helper: Hash password
