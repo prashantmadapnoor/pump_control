@@ -10,10 +10,10 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': 'sql205.infinityfree.com',
-    'user': 'if0_38938492',
-    'password': 'tl5bQoupNOIGla ',
-    'database': 'if0_38938492_remote_cuntrol',
+    'host': '${{RAILWAY_PRIVATE_DOMAIN}}',
+    'user': 'root',
+    'password': '${{MYSQL_ROOT_PASSWORD}}',
+    'database': '${{MYSQL_DATABASE}}',
 }
 
 # Helper: Hash password
