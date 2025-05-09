@@ -10,11 +10,10 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': '192.168.0.174',
-    'user': 'evadminserver',
-    'password': 'MGTev007',
-    'database': 'EV_STATION',
-    'port' : 3306,
+    'host': 'sql205.infinityfree.com',
+    'user': 'if0_38938492',
+    'password': 'tl5bQoupNOIGla ',
+    'database': 'if0_38938492_remote_cuntrol',
 }
 
 # Helper: Hash password
