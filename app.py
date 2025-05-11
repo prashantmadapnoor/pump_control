@@ -10,10 +10,10 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': 'db4free.net',
-    'user': 'remote_1234',
-    'password': 'Remote@1234',
-    'database': 'remote_1234',
+    'host': '192.168.0.174',
+    'user': 'evadminserver',
+    'password': 'MGTev007',
+    'database': 'EV_STATION',
     'port':3306,
 }
 
