@@ -253,25 +253,25 @@ def dashboard():
     cursor = conn.cursor(dictionary=True)
 
     # Fetch devices and their status
-    cursor.execute("""
-       SELECT d.device_id, d.status FROM devices d
-       JOIN user_devices ud ON d.id = ud.device_id
-       WHERE ud.user_id = %s
-    """, (user_id,))
-    devices = cursor.fetchall()
+    # cursor.execute("""
+    #    SELECT d.device_id, d.status FROM devices d
+    #    JOIN user_devices ud ON d.id = ud.device_id
+    #    WHERE ud.user_id = %s
+    # """, (user_id,))
+    # devices = cursor.fetchall()
 
-    pump_devices = [d['device_id'] for d in devices if d['device_id'].lower().startswith('pump')]
-    cam_devices = [d['device_id'] for d in devices if d['device_id'].lower().startswith('cam')]
-    device_status = {d['device_id']: d['status'] for d in devices}
+    # pump_devices = [d['device_id'] for d in devices if d['device_id'].lower().startswith('pump')]
+    # cam_devices = [d['device_id'] for d in devices if d['device_id'].lower().startswith('cam')]
+    # device_status = {d['device_id']: d['status'] for d in devices}
 
-    cursor.close()
+    # cursor.close()
     conn.close()
 
     return render_template('dashboard.html',
-                           user_name=session.get('user_name'),
-                           pump_devices=pump_devices,
-                           cam_devices=cam_devices,
-                           device_status=device_status)
+                           user_name=session.get('user_name'),)
+                        #    pump_devices=pump_devices,
+                        #    cam_devices=cam_devices,
+                        #    device_status=device_status)
 
 @app.route('/set_device_status', methods=['POST'])
 def set_device_status():
