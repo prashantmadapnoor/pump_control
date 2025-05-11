@@ -13,10 +13,10 @@ port = int(os.environ.get("PORT", 5000))
 
 # MySQL config
 db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',
-    'database': 'remote_control',
+    'host': 'sql12.freesqldatabase.com',
+    'user': 'sql12778150',
+    'password': 'kCDUNdmy7I',
+    'database': 'sql12778150',
     'port':3306,
 }
 
