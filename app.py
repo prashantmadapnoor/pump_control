@@ -10,10 +10,10 @@ app.secret_key = 'prashanth'
 
 # MySQL config
 db_config = {
-    'host': 'db4free.net',
-    'user': 'remote_1234567',
-    'password': 'Remote@1234',
-    'database': 'remote_1234567',
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'root',
+    'database': 'remote_control',
     'port':3306,
 }
 
