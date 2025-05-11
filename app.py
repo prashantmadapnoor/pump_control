@@ -3,10 +3,13 @@ import mysql.connector
 import hashlib
 from werkzeug.security import generate_password_hash,check_password_hash
 import re
+import os
 
 
 app = Flask(__name__)
 app.secret_key = 'prashanth'
+
+port = int(os.environ.get("PORT", 5000))
 
 # MySQL config
 db_config = {
@@ -316,5 +319,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=port)
 
