@@ -14,9 +14,9 @@ port = int(os.environ.get("PORT", 5000))
 # MySQL config
 db_config = {
     'host': '117.247.0.204',
-    'user': 'remote_user',
-    'password': 'Remote_control',
-    'database': 'remote_control',
+    'user': 'evadminserver',
+    'password': 'MGTev007',
+    'database': 'EV_STATION',
     'port':3306
 }
 
