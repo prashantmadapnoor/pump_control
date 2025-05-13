@@ -19,7 +19,7 @@ app.secret_key = 'prashanth'
 # }
 # MySQL config
 db_config = {
-    'host': '117.247..204',
+    'host': '117.247.0.204',
     'user': 'remote_user',
     'password': 'Remote_control',
     'database': 'remote_control',
