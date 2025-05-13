@@ -13,7 +13,7 @@ port = int(os.environ.get("PORT", 5000))
 
 # MySQL config
 db_config = {
-    'host': '117.247.0.204',
+    'host': '127.0.0.1',
     'user': 'evadminserver',
     'password': 'MGTev007',
     'database': 'EV_STATION',
@@ -23,20 +23,20 @@ db_config = {
 # Helper: Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
-# @app.route('/')
-# def index():
-#     try:
-#         conn = mysql.connector.connect(**db_config)
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT NOW();")
-#         result = cursor.fetchone()
-#         return f"Database connected successfully! Time: {result[0]}"
-#     except mysql.connector.Error as err:
-#         return f"Database connection failed: {err}"
-# 👉 Add this route to fix the issue
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute("SELECT NOW();")
+        result = cursor.fetchone()
+        return f"Database connected successfully! Time: {result[0]}"
+    except mysql.connector.Error as err:
+        return f"Database connection failed: {err}"
+# 👉 Add this route to fix the issue
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 # @app.route('/')
 # def home():
 #     return redirect(url_for('index'))
