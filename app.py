@@ -13,7 +13,7 @@ port = int(os.environ.get("PORT", 5000))
 
 # MySQL config
 db_config = {
-    'host': 'localhost',
+    'host': '117.247.0.204',
     'user': 'evadminserver',
     'password': 'MGTev007',
     'database': 'EV_STATION',
