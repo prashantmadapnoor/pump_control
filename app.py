@@ -17,7 +17,7 @@ db_config = {
     'user': 'remote_user',
     'password': 'Remote_control',
     'database': 'remote_control',
-    'port':3306,
+    'port':3306
 }
 
 # Helper: Hash password
