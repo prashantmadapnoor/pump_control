@@ -21,20 +21,20 @@ db_config = {
 # Helper: Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
-@app.route('/')
-def index():
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        cursor.execute("SELECT NOW();")
-        result = cursor.fetchone()
-        return f"Database connected successfully! Time: {result[0]}"
-    except mysql.connector.Error as err:
-        return f"Database connection failed: {err}"
-# 👉 Add this route to fix the issue
 # @app.route('/')
 # def index():
-#     return render_template('index.html')
+#     try:
+#         conn = mysql.connector.connect(**db_config)
+#         cursor = conn.cursor()
+#         cursor.execute("SELECT NOW();")
+#         result = cursor.fetchone()
+#         return f"Database connected successfully! Time: {result[0]}"
+#     except mysql.connector.Error as err:
+#         return f"Database connection failed: {err}"
+# 👉 Add this route to fix the issue
+@app.route('/')
+def index():
+    return render_template('index.html')
 # @app.route('/')
 # def home():
 #     return redirect(url_for('index'))
@@ -321,6 +321,6 @@ def logout():
 
 # Run the app
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ['PORT'])
     app.run(host="0.0.0.0", port=port)
 
