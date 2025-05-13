@@ -13,7 +13,7 @@ port = int(os.environ.get("PORT", 5000))
 
 # MySQL config
 db_config = {
-    'host': '192.168.0.174',
+    'host': '117.247.0.204',
     'user': 'remote_user',
     'password': 'Remote_control',
     'database': 'remote_control',
