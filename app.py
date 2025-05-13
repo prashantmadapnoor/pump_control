@@ -9,14 +9,12 @@ import os
 app = Flask(__name__)
 app.secret_key = 'prashanth'
 
-port = int(os.environ.get("PORT", 5000))
-
 # MySQL config
 db_config = {
-    'host': '117.247.0.204',
-    'user': 'evadminserver',
-    'password': 'MGTev007',
-    'database': 'EV_STATION',
+    'host': 'sql12.freesqldatabase.com',
+    'user': 'sql12778310',
+    'password': '3D12ngmHt7',
+    'database': 'sql12778310',
     'port':3306
 }
 
@@ -321,6 +319,8 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# Run the app
 if __name__ == '__main__':
-    app.run(port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
 
