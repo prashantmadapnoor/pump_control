@@ -15,7 +15,7 @@ app.secret_key = 'prashanth'
 #     'database': 'MGT_Remote_Ccontrol'  
 # }
 db_config = {
-    'host': '192.168.0.174',
+    'host': '117.247.0.204',
     'user': 'remote_user',
     'password': 'Remote_control',
     'database': 'remote_control',
@@ -217,8 +217,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     conn = None
-    cursor = None  # Initialize variables to avoid UnboundLocalError
-
+    cursor = None
     if request.method == 'POST':
         email = request.form['email'].strip()
         password = request.form['password']
@@ -244,15 +243,13 @@ def login():
             else:
                 flash("Invalid email or password.")
                 return redirect(url_for('login'))
-
         except mysql.connector.Error as err:
             flash(f"Database error: {err}")
             return redirect(url_for('login'))
-
         finally:
-            if cursor is not None:
+            if cursor:
                 cursor.close()
-            if conn is not None:
+            if conn:
                 conn.close()
 
     return render_template('login.html')
