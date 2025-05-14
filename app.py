@@ -29,7 +29,7 @@ port = int(os.environ.get("PORT", 5000))
 # }
 # MySQL config
 db_config = {
-    'host': '117.247.0.204',
+    'host': '192.168.0.174',
     'user': 'remote_user',
     'password': 'Remote_control',
     'database': 'remote_control',
@@ -45,20 +45,20 @@ except mysql.connector.Error as err:
 # Helper: Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
-@app.route('/')
-def index():
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        cursor.execute("SELECT NOW();")
-        result = cursor.fetchone()
-        return f"Database connected successfully! Time: {result[0]}"
-    except mysql.connector.Error as err:
-        return f"Database connection failed: {err}"
-# 👉 Add this route to fix the issue
 # @app.route('/')
 # def index():
-#     return render_template('index.html')
+#     try:
+#         conn = mysql.connector.connect(**db_config)
+#         cursor = conn.cursor()
+#         cursor.execute("SELECT NOW();")
+#         result = cursor.fetchone()
+#         return f"Database connected successfully! Time: {result[0]}"
+#     except mysql.connector.Error as err:
+#         return f"Database connection failed: {err}"
+# 👉 Add this route to fix the issue
+@app.route('/')
+def index():
+    return render_template('index.html')
 # @app.route('/')
 # def home():
 #     return redirect(url_for('index'))
@@ -345,4 +345,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
