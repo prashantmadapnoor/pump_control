@@ -10,21 +10,21 @@ app = Flask(__name__)
 app.secret_key = 'prashanth'
 
 # # MySQL config
-db_config = {
-    'host': 'sql12.freesqldatabase.com',
-    'user': 'sql12778310',
-    'password': '3D12ngmHt7',
-    'database': 'sql12778310',
-    'port':3306
-}
-# MySQL config
 # db_config = {
-#     'host': '117.247.0.204',
-#     'user': 'remote_user',
-#     'password': 'Remote_control',
-#     'database': 'remote_control',
+#     'host': 'sql12.freesqldatabase.com',
+#     'user': 'sql12778310',
+#     'password': '3D12ngmHt7',
+#     'database': 'sql12778310',
 #     'port':3306
 # }
+# MySQL config
+db_config = {
+    'host': '117.247.0.204',
+    'user': 'remote_user',
+    'password': 'Remote_control',
+    'database': 'remote_control',
+    'port':3306
+}
 
 # Helper: Hash password
 def hash_password(password):
