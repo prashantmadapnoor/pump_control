@@ -9,6 +9,13 @@ import os
 app = Flask(__name__)
 app.secret_key = 'prashanth'
 
+# Set Flask to run in production mode
+app.config['ENV'] = 'production'  # Set the environment to production
+app.config['DEBUG'] = False        # Disable the debug mode
+print("Flask Environment: ", app.config['ENV'])
+print("Debug Mode: ", app.config['DEBUG'])
+
+
 # # MySQL config
 # db_config = {
 #     'host': 'sql12.freesqldatabase.com',
@@ -332,6 +339,7 @@ def set_device_status():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
 
 # Run the app
 if __name__ == '__main__':
