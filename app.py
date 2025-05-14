@@ -25,6 +25,12 @@ db_config = {
     'database': 'remote_control',
     'port':3306
 }
+try:
+    test_conn = mysql.connector.connect(**db_config)
+    test_conn.close()
+except mysql.connector.Error as err:
+    print("❌ Database connection failed:", err)
+
 
 # Helper: Hash password
 def hash_password(password):
