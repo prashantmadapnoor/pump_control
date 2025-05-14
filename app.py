@@ -3,31 +3,17 @@ import mysql.connector
 import hashlib
 from werkzeug.security import generate_password_hash,check_password_hash
 import re
-import os
-
 
 app = Flask(__name__)
 app.secret_key = 'prashanth'
 
-# Set Flask to run in production mode
-app.config['ENV'] = 'production'  # Set the environment to production
-app.config['DEBUG'] = False        # Disable the debug mode
-print("Flask Environment: ", app.config['ENV'])
-print("Debug Mode: ", app.config['DEBUG'])
-
-# Get the port from environment variable
-port = int(os.environ.get("PORT", 5000))
-
-
-# # MySQL config
-# db_config = {
-#     'host': 'sql12.freesqldatabase.com',
-#     'user': 'sql12778310',
-#     'password': '3D12ngmHt7',
-#     'database': 'sql12778310',
-#     'port':3306
-# }
 # MySQL config
+# db_config = {
+#     'host': 'localhost',
+#     'user': 'flaskuser',
+#     'password': 'root',
+#     'database': 'MGT_Remote_Ccontrol'  
+# }
 db_config = {
     'host': '192.168.0.174',
     'user': 'remote_user',
@@ -35,26 +21,19 @@ db_config = {
     'database': 'remote_control',
     'port':3306
 }
-try:
-    test_conn = mysql.connector.connect(**db_config)
-    test_conn.close()
-except mysql.connector.Error as err:
-    print("❌ Database connection failed:", err)
+# try:
+#     connection = mysql.connector.connect(**db_config)
+#     cursor = connection.cursor()
+#     cursor.execute("SELECT DATABASE();")
+#     result = cursor.fetchone()
+#     print("Connected to database:", result)
+# except mysql.connector.Error as err:
+#     print("Database error:", err)
 
-
-# Helper: Hash password
+# # Helper: Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
-# @app.route('/')
-# def index():
-#     try:
-#         conn = mysql.connector.connect(**db_config)
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT NOW();")
-#         result = cursor.fetchone()
-#         return f"Database connected successfully! Time: {result[0]}"
-#     except mysql.connector.Error as err:
-#         return f"Database connection failed: {err}"
+
 # 👉 Add this route to fix the issue
 @app.route('/')
 def index():
@@ -64,49 +43,51 @@ def index():
 #     return redirect(url_for('index'))
 @app.route('/admin')
 def admin():
-    if 'admin_id' not in session:
-        flash("Admin access only. Please log in as admin.")
-        return redirect(url_for('login'))
-
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)
 
+    # All users
     cursor.execute("SELECT * FROM users")
     users = cursor.fetchall()
 
+    # All unassigned devices
+    cursor.execute("SELECT * FROM devices WHERE id NOT IN (SELECT device_id FROM user_devices)")
+    unassigned_devices = cursor.fetchall()
+
+    # All assigned devices for reference
+    cursor.execute("SELECT users.name, devices.device_id FROM user_devices JOIN users ON user_devices.user_id = users.id JOIN devices ON user_devices.device_id = devices.id")
+    assignments = cursor.fetchall()
+
+    # All devices (for pump/camera attachment)
     cursor.execute("SELECT * FROM devices")
     devices = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT ud.id, u.name AS username, u.email, d.device_id 
-        FROM user_devices ud
-        JOIN users u ON ud.user_id = u.id
-        JOIN devices d ON ud.device_id = d.id
-    """)
-    assignments = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('admin.html', users=users, devices=devices, assignments=assignments)
+    return render_template("admin.html", users=users, devices=devices, assignments=assignments, unassigned_devices=unassigned_devices)
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
-    username = request.form['username']
+    name = request.form['name']
     email = request.form['email']
     password = request.form['password']
-    hashed_password = generate_password_hash(password)
+    phone = request.form['phone']
+    address = request.form['address']
+    role = request.form['role']
 
+    hashed_password = generate_password_hash(password)
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
-                   (username, email, hashed_password))
+    cursor.execute("""
+        INSERT INTO users (name, email, password, phone, address, role) 
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (name, email, hashed_password, phone, address, role))
     conn.commit()
     cursor.close()
     conn.close()
     flash('User added successfully!', 'success')
     return redirect(url_for('admin'))
-
 
 @app.route('/delete_user/<int:user_id>')
 def delete_user(user_id):
@@ -123,42 +104,59 @@ def delete_user(user_id):
 @app.route('/add_device', methods=['POST'])
 def add_device():
     device_id = request.form['device_id']
+    user_id = request.form['user_id']
+
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)
 
+    # Check if device already exists
     cursor.execute("SELECT * FROM devices WHERE device_id = %s", (device_id,))
-    if cursor.fetchone():
+    existing = cursor.fetchone()
+
+    if existing:
         flash("Device already exists!", "warning")
     else:
-        cursor = conn.cursor()
         cursor.execute("INSERT INTO devices (device_id) VALUES (%s)", (device_id,))
         conn.commit()
-        flash("Device added!", "success")
+        new_device_id = cursor.lastrowid
+
+        # Assign device to user
+        cursor.execute("INSERT INTO user_devices (user_id, device_id) VALUES (%s, %s)", (user_id, new_device_id))
+        conn.commit()
+        flash("Device added and assigned to user!", "success")
 
     cursor.close()
     conn.close()
     return redirect(url_for('admin'))
-
-
-@app.route('/assign_device', methods=['POST'])
-def assign_device():
-    user_id = request.form['user_id']
+@app.route('/add_pump', methods=['POST'])
+def add_pump():
+    pump_id = request.form['pump_id']
     device_id = request.form['device_id']
     conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("SELECT * FROM user_devices WHERE user_id = %s AND device_id = %s", (user_id, device_id))
-    if cursor.fetchone():
-        flash("Device already assigned to this user.", "warning")
-    else:
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO user_devices (user_id, device_id) VALUES (%s, %s)", (user_id, device_id))
-        conn.commit()
-        flash("Device assigned to user!", "success")
-
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO pumps (pump_id, device_id) VALUES (%s, %s)", (pump_id, device_id))
+    conn.commit()
     cursor.close()
     conn.close()
+    flash("Pump added!", "success")
     return redirect(url_for('admin'))
+@app.route('/add_camera', methods=['POST'])
+def add_camera():
+    camera_id = request.form['camera_id']
+    device_id = request.form['device_id']
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO cameras (camera_id, device_id) VALUES (%s, %s)", (camera_id, device_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Camera added!", "success")
+    return redirect(url_for('admin'))
+@app.route('/assign_device', methods=['POST'])
+def assign_device():
+    flash("Device assignment must be done during device creation. Use 'Add Device' form.", "info")
+    return redirect(url_for('admin'))
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -175,7 +173,7 @@ def register():
             flash("Invalid email address.")
             return redirect(url_for('register'))
 
-        # Enforce strong password (min 8 characters, with uppercase, lowercase, number)
+        # Enforce strong password
         if len(password) < 8 or not re.search(r"[A-Z]", password) \
                 or not re.search(r"[a-z]", password) or not re.search(r"\d", password):
             flash("Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.")
@@ -183,9 +181,12 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
+        conn = None
+        cursor = None
+
         try:
             conn = mysql.connector.connect(**db_config)
-            cursor = conn.cursor()
+            cursor = conn.cursor(dictionary=True)
 
             # Check if email already exists
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -205,15 +206,19 @@ def register():
         except mysql.connector.Error as err:
             flash(f"Database error: {err}")
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
 
     return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     conn = None
-    cursor = None
+    cursor = None  # Initialize variables to avoid UnboundLocalError
+
     if request.method == 'POST':
         email = request.form['email'].strip()
         password = request.form['password']
@@ -239,13 +244,15 @@ def login():
             else:
                 flash("Invalid email or password.")
                 return redirect(url_for('login'))
+
         except mysql.connector.Error as err:
             flash(f"Database error: {err}")
             return redirect(url_for('login'))
+
         finally:
-            if cursor:
+            if cursor is not None:
                 cursor.close()
-            if conn:
+            if conn is not None:
                 conn.close()
 
     return render_template('login.html')
@@ -271,26 +278,58 @@ def dashboard():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    pump_devices = []
-    cam_devices = []
-    device_status = {}
+    print(f"[DEBUG] Logged in user_id: {user_id}")
+
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch devices and their status
     cursor.execute("""
-       SELECT d.device_id, d.status FROM devices d
-       JOIN user_devices ud ON d.id = ud.device_id
-       WHERE ud.user_id = %s
+        SELECT d.id AS device_db_id
+        FROM devices d
+        JOIN user_devices ud ON d.id = ud.device_id
+        WHERE ud.user_id = %s
     """, (user_id,))
-    devices = cursor.fetchall()
+    assigned_devices = cursor.fetchall()
+    device_ids = [d['device_db_id'] for d in assigned_devices]
+    print(f"[DEBUG] Assigned device DB IDs: {device_ids}")
 
-    pump_devices = [d['device_id'] for d in devices if d['device_id'].lower().startswith('pump')]
-    cam_devices = [d['device_id'] for d in devices if d['device_id'].lower().startswith('cam')]
-    device_status = {d['device_id']: d['status'] for d in devices}
+    pump_devices = []
+    cam_devices = []
+    device_status = {}
+
+    for device_id in device_ids:
+        print(f"[DEBUG] Processing device_id: {device_id}")
+
+        # Pumps
+        cursor.execute("SELECT pump_id, status FROM pumps WHERE device_id = %s", (device_id,))
+        pumps = cursor.fetchall()
+        print(f"[DEBUG] Pumps found: {pumps}")
+        for pump in pumps:
+            pump_devices.append({
+                'device_id': device_id,
+                'pump_id': pump['pump_id'],
+                'status': pump['status']
+            })
+            device_status[pump['pump_id']] = pump['status']
+
+        # Cameras
+        cursor.execute("SELECT camera_id, status FROM cameras WHERE device_id = %s", (device_id,))
+        cams = cursor.fetchall()
+        print(f"[DEBUG] Cameras found: {cams}")
+        for cam in cams:
+            cam_devices.append({
+                'device_id': device_id,
+                'camera_id': cam['camera_id'],
+                'status': cam['status']
+            })
+            device_status[cam['camera_id']] = cam['status']
 
     cursor.close()
     conn.close()
+
+    print(f"[DEBUG] Final pump_devices: {pump_devices}")
+    print(f"[DEBUG] Final cam_devices: {cam_devices}")
+    print(f"[DEBUG] Final device_status: {device_status}")
 
     return render_template('dashboard.html',
                            user_name=session.get('user_name'),
@@ -298,51 +337,70 @@ def dashboard():
                            cam_devices=cam_devices,
                            device_status=device_status)
 
-@app.route('/set_device_status', methods=['POST'])
-def set_device_status():
-    if 'user_id' not in session:
-        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
-
+@app.route('/update_status', methods=['POST'])
+def update_status():
     data = request.get_json()
-    device_id = data.get('device_id')
-    status = data.get('status')
+    print(f"[DEBUG] Received data: {data}")
 
-    if not device_id or status not in ['ON', 'OFF']:
-        return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
+    status = data.get('status')               # "ON" / "OFF"
+    pump_id = data.get('pump_id')             # pump_id
+    device_id = data.get('device_id')         # DeviceX
+    component_type = data.get('type')         # 'pump'
+    duration = data.get('duration')           # in minutes (if ON)
 
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
+    print(f"[DEBUG] Parsed values - Status: {status}, Pump ID: {pump_id}, Device ID: {device_id}, Type: {component_type}, Duration: {duration}")
 
-        # Check if the device is assigned to the user
+    user_id = session.get('user_id')
+    print(f"[DEBUG] Current user ID from session: {user_id}")
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    if component_type == 'pump':
+        print(f"[DEBUG] Updating pump status in database...")
         cursor.execute("""
-            SELECT d.id FROM devices d
-            JOIN user_devices ud ON d.id = ud.device_id
-            WHERE ud.user_id = %s AND d.device_id = %s
-        """, (session['user_id'], device_id))
-        device = cursor.fetchone()
+            UPDATE pumps 
+            SET status=%s 
+            WHERE pump_id=%s AND device_id=(SELECT id FROM devices WHERE device_id=%s)
+        """, (status, pump_id, device_id))
 
-        if not device:
-            return jsonify({'status': 'error', 'message': 'Device not found or unauthorized'}), 403
+        print(f"[DEBUG] Inserting pump log...")
+        cursor.execute("""
+            INSERT INTO pump_logs (user_id, device_id, pump_id, action, duration_minutes)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (user_id, device_id, pump_id, status, duration if status == "ON" else 0))
 
-        # Update the device status
-        cursor.execute("UPDATE devices SET status = %s WHERE device_id = %s", (status, device_id))
-        conn.commit()
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-        return jsonify({'status': 'success', 'message': f'{device_id} set to {status}'})
+    print("[DEBUG] Pump status updated and log saved successfully.")
+    return jsonify({'success': True})
 
-    except Exception as e:
-        print(e)
-        return jsonify({'status': 'error', 'message': 'Server error'}), 500
-    finally:
-        cursor.close()
-        conn.close()
+
+# @app.route('/update_device_status', methods=['POST'])
+# def update_device_status():
+#     data = request.get_json()
+#     device_id = data.get('device_id')
+#     status = data.get('status')
+
+#     if not device_id or not status:
+#         return jsonify({'message': 'Missing data'}), 400
+
+#     try:
+#         cursor = mysql.connection.cursor()
+#         cursor.execute("UPDATE devices SET status = %s WHERE device_id = %s", (status, device_id))
+#         mysql.connection.commit()
+#         cursor.close()
+#         return jsonify({'message': 'Status updated successfully'}), 200
+#     except Exception as e:
+#         return jsonify({'message': 'Database error', 'error': str(e)}), 500
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
