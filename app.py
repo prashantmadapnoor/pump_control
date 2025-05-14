@@ -15,6 +15,9 @@ app.config['DEBUG'] = False        # Disable the debug mode
 print("Flask Environment: ", app.config['ENV'])
 print("Debug Mode: ", app.config['DEBUG'])
 
+# Get the port from environment variable
+port = int(os.environ.get("PORT", 5000))
+
 
 # # MySQL config
 # db_config = {
@@ -341,9 +344,5 @@ def logout():
     return redirect(url_for('login'))
 
 
-# Run the app
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
